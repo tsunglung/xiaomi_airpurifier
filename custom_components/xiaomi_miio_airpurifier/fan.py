@@ -5,6 +5,7 @@ from functools import partial
 import logging
 from typing import Optional
 
+from .airpurifier_miot import AirPurifierZA1
 from miio import (  # pylint: disable=import-error
     AirDogX3,
     AirDogX5,
@@ -312,7 +313,7 @@ ATTR_RAW_SPEED = "raw_speed"
 # Fan Leshow SS4
 ATTR_ERROR_DETECTED = "error_detected"
 
-PURIFIER_MIOT = [MODEL_AIRPURIFIER_3, MODEL_AIRPURIFIER_3H, MODEL_AIRPURIFIER_ZA1]
+PURIFIER_MIOT = [MODEL_AIRPURIFIER_3, MODEL_AIRPURIFIER_3H]
 HUMIDIFIER_MIOT = [MODEL_AIRHUMIDIFIER_CA4]
 
 # AirDogX7SM
@@ -425,6 +426,24 @@ AVAILABLE_ATTRIBUTES_AIRPURIFIER_3 = {
     ATTR_FILTER_RFID_TAG: "filter_rfid_tag",
     ATTR_FILTER_TYPE: "filter_type",
     ATTR_FAN_LEVEL: "fan_level",
+}
+AVAILABLE_ATTRIBUTES_AIRPURIFIER_ZA1 = {
+    ATTR_TEMPERATURE: "temperature",
+    ATTR_HUMIDITY: "humidity",
+    ATTR_AIR_QUALITY_INDEX: "aqi",
+    ATTR_MODE: "mode",
+    ATTR_FILTER_HOURS_USED: "filter_hours_used",
+    ATTR_FILTER_LIFE: "filter_life_remaining",
+    ATTR_FAVORITE_LEVEL: "favorite_level",
+    ATTR_CHILD_LOCK: "child_lock",
+    ATTR_MOTOR_SPEED: "motor_speed",
+    ATTR_AVERAGE_AIR_QUALITY_INDEX: "average_aqi",
+    ATTR_PURIFY_VOLUME: "purify_volume",
+    ATTR_USE_TIME: "use_time",
+    ATTR_BUZZER: "buzzer",
+    ATTR_LED_BRIGHTNESS: "led_brightness",
+    ATTR_FILTER_RFID_PRODUCT_ID: "filter_rfid_product_id",
+    ATTR_FILTER_RFID_TAG: "filter_rfid_tag",
 }
 
 AVAILABLE_ATTRIBUTES_AIRPURIFIER_V3 = {
@@ -773,6 +792,12 @@ FEATURE_FLAGS_AIRPURIFIER_3 = (
     | FEATURE_SET_FAN_LEVEL
     | FEATURE_SET_LED_BRIGHTNESS
 )
+FEATURE_FLAGS_AIRPURIFIER_ZA1 = (
+    FEATURE_SET_BUZZER
+    | FEATURE_SET_CHILD_LOCK
+    | FEATURE_SET_FAVORITE_LEVEL
+    | FEATURE_SET_LED_BRIGHTNESS
+)
 
 FEATURE_FLAGS_AIRPURIFIER_V3 = (
     FEATURE_SET_BUZZER | FEATURE_SET_CHILD_LOCK | FEATURE_SET_LED
@@ -1090,6 +1115,9 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     if model in PURIFIER_MIOT:
         air_purifier = AirPurifierMiot(host, token)
         device = XiaomiAirPurifierMiot(name, air_purifier, model, unique_id, retries)
+    elif model == MODEL_AIRPURIFIER_ZA1:
+        air_purifier = AirPurifierZA1(host, token)
+        device = XiaomiAirPurifierMiot(name, air_purifier, model, unique_id, retries)
     elif model.startswith("zhimi.airpurifier."):
         air_purifier = AirPurifier(host, token)
         device = XiaomiAirPurifier(name, air_purifier, model, unique_id)
@@ -1380,6 +1408,10 @@ class XiaomiAirPurifier(XiaomiGenericDevice):
             self._device_features = FEATURE_FLAGS_AIRPURIFIER_3
             self._available_attributes = AVAILABLE_ATTRIBUTES_AIRPURIFIER_3
             self._preset_modes = OPERATION_MODES_AIRPURIFIER_3
+        elif self._model == MODEL_AIRPURIFIER_ZA1:
+            self._device_features = FEATURE_FLAGS_AIRPURIFIER_ZA1
+            self._available_attributes = AVAILABLE_ATTRIBUTES_AIRPURIFIER_ZA1
+            self._preset_modes = OPERATION_MODES_AIRPURIFIER_PRO
         elif self._model == MODEL_AIRPURIFIER_V3:
             self._device_features = FEATURE_FLAGS_AIRPURIFIER_V3
             self._available_attributes = AVAILABLE_ATTRIBUTES_AIRPURIFIER_V3
