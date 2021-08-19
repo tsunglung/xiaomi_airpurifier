@@ -446,7 +446,7 @@ class AirPurifierZA1Status(BasicAirPurifierMiotStatus):
     #     )
 
     @property
-    def pm_25_density(self) -> int:
+    def pm25(self) -> int:
         """Return pm 2.5 density level."""
         return self.data["pm25"]
     @property

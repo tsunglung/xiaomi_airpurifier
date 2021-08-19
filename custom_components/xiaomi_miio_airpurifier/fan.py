@@ -431,6 +431,7 @@ AVAILABLE_ATTRIBUTES_AIRPURIFIER_ZA1 = {
     ATTR_TEMPERATURE: "temperature",
     ATTR_HUMIDITY: "humidity",
     ATTR_AIR_QUALITY_INDEX: "aqi",
+    ATTR_PM25: "pm25",
     ATTR_MODE: "mode",
     ATTR_FILTER_HOURS_USED: "filter_hours_used",
     ATTR_FILTER_LIFE: "filter_life_remaining",
