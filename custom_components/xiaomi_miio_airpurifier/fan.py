@@ -93,71 +93,71 @@ from homeassistant.const import (
     CONF_NAME,
     CONF_TOKEN,
 )
-from homeassistant.exceptions import PlatformNotReady
+
 import homeassistant.helpers.config_validation as cv
+from homeassistant.config_entries import SOURCE_IMPORT
+from homeassistant.exceptions import PlatformNotReady
 from homeassistant.util.percentage import (
     ordered_list_item_to_percentage,
     percentage_to_ordered_list_item,
 )
+from .const import (
+    DEFAULT_NAME,
+    DEFAULT_RETRIES,
+    DATA_KEY,
+    DOMAIN,
+    CONF_MODEL,
+    CONF_RETRIES,
+    MODEL_AIRPURIFIER_V1,
+    MODEL_AIRPURIFIER_V2,
+    MODEL_AIRPURIFIER_V3,
+    MODEL_AIRPURIFIER_V5,
+    MODEL_AIRPURIFIER_PRO,
+    MODEL_AIRPURIFIER_PRO_V7,
+    MODEL_AIRPURIFIER_M1,
+    MODEL_AIRPURIFIER_M2,
+    MODEL_AIRPURIFIER_MA1,
+    MODEL_AIRPURIFIER_MA2,
+    MODEL_AIRPURIFIER_SA1,
+    MODEL_AIRPURIFIER_SA2,
+    MODEL_AIRPURIFIER_2S,
+    MODEL_AIRPURIFIER_2H,
+    MODEL_AIRPURIFIER_3,
+    MODEL_AIRPURIFIER_3H,
+    MODEL_AIRPURIFIER_ZA1,
+    MODEL_AIRPURIFIER_AIRDOG_X3,
+    MODEL_AIRPURIFIER_AIRDOG_X5,
+    MODEL_AIRPURIFIER_AIRDOG_X7SM,
+    MODEL_AIRHUMIDIFIER_V1,
+    MODEL_AIRHUMIDIFIER_CA1,
+    MODEL_AIRHUMIDIFIER_CA4,
+    MODEL_AIRHUMIDIFIER_CB1,
+    MODEL_AIRHUMIDIFIER_MJJSQ,
+    MODEL_AIRHUMIDIFIER_JSQ,
+    MODEL_AIRHUMIDIFIER_JSQ1,
+    MODEL_AIRHUMIDIFIER_JSQ001,
+    MODEL_AIRFRESH_A1,
+    MODEL_AIRFRESH_VA2,
+    MODEL_AIRFRESH_VA4,
+    MODEL_AIRFRESH_T2017,
+    MODEL_FAN_V2,
+    MODEL_FAN_V3,
+    MODEL_FAN_SA1,
+    MODEL_FAN_ZA1,
+    MODEL_FAN_ZA3,
+    MODEL_FAN_ZA4,
+    MODEL_FAN_P5,
+    MODEL_FAN_P8,
+    MODEL_FAN_P9,
+    MODEL_FAN_P10,
+    MODEL_FAN_P11,
+    MODEL_FAN_LESHOW_SS4,
+    MODEL_FAN_1C,
+    OPT_MODEL
+)
 
 _LOGGER = logging.getLogger(__name__)
 
-DEFAULT_NAME = "Xiaomi Miio Device"
-DEFAULT_RETRIES = 20
-DATA_KEY = "fan.xiaomi_miio_airpurifier"
-DOMAIN = "xiaomi_miio_airpurifier"
-
-CONF_MODEL = "model"
-CONF_RETRIES = "retries"
-
-MODEL_AIRPURIFIER_V1 = "zhimi.airpurifier.v1"
-MODEL_AIRPURIFIER_V2 = "zhimi.airpurifier.v2"
-MODEL_AIRPURIFIER_V3 = "zhimi.airpurifier.v3"
-MODEL_AIRPURIFIER_V5 = "zhimi.airpurifier.v5"
-MODEL_AIRPURIFIER_PRO = "zhimi.airpurifier.v6"
-MODEL_AIRPURIFIER_PRO_V7 = "zhimi.airpurifier.v7"
-MODEL_AIRPURIFIER_M1 = "zhimi.airpurifier.m1"
-MODEL_AIRPURIFIER_M2 = "zhimi.airpurifier.m2"
-MODEL_AIRPURIFIER_MA1 = "zhimi.airpurifier.ma1"
-MODEL_AIRPURIFIER_MA2 = "zhimi.airpurifier.ma2"
-MODEL_AIRPURIFIER_SA1 = "zhimi.airpurifier.sa1"
-MODEL_AIRPURIFIER_SA2 = "zhimi.airpurifier.sa2"
-MODEL_AIRPURIFIER_2S = "zhimi.airpurifier.mc1"
-MODEL_AIRPURIFIER_2H = "zhimi.airpurifier.mc2"
-MODEL_AIRPURIFIER_3 = "zhimi.airpurifier.ma4"
-MODEL_AIRPURIFIER_3H = "zhimi.airpurifier.mb3"
-MODEL_AIRPURIFIER_ZA1 = "zhimi.airpurifier.za1"
-MODEL_AIRPURIFIER_AIRDOG_X3 = "airdog.airpurifier.x3"
-MODEL_AIRPURIFIER_AIRDOG_X5 = "airdog.airpurifier.x5"
-MODEL_AIRPURIFIER_AIRDOG_X7SM = "airdog.airpurifier.x7sm"
-
-MODEL_AIRHUMIDIFIER_V1 = "zhimi.humidifier.v1"
-MODEL_AIRHUMIDIFIER_CA1 = "zhimi.humidifier.ca1"
-MODEL_AIRHUMIDIFIER_CA4 = "zhimi.humidifier.ca4"
-MODEL_AIRHUMIDIFIER_CB1 = "zhimi.humidifier.cb1"
-MODEL_AIRHUMIDIFIER_MJJSQ = "deerma.humidifier.mjjsq"
-MODEL_AIRHUMIDIFIER_JSQ = "deerma.humidifier.jsq"
-MODEL_AIRHUMIDIFIER_JSQ1 = "deerma.humidifier.jsq1"
-MODEL_AIRHUMIDIFIER_JSQ001 = "shuii.humidifier.jsq001"
-
-MODEL_AIRFRESH_A1 = "dmaker.airfresh.a1"
-MODEL_AIRFRESH_VA2 = "zhimi.airfresh.va2"
-MODEL_AIRFRESH_VA4 = "zhimi.airfresh.va4"
-MODEL_AIRFRESH_T2017 = "dmaker.airfresh.t2017"
-
-MODEL_FAN_V2 = "zhimi.fan.v2"
-MODEL_FAN_V3 = "zhimi.fan.v3"
-MODEL_FAN_SA1 = "zhimi.fan.sa1"
-MODEL_FAN_ZA1 = "zhimi.fan.za1"
-MODEL_FAN_ZA3 = "zhimi.fan.za3"
-MODEL_FAN_ZA4 = "zhimi.fan.za4"
-MODEL_FAN_P5 = "dmaker.fan.p5"
-MODEL_FAN_P8 = "dmaker.fan.p8"
-MODEL_FAN_P9 = "dmaker.fan.p9"
-MODEL_FAN_P10 = "dmaker.fan.p10"
-MODEL_FAN_P11 = "dmaker.fan.p11"
-MODEL_FAN_LESHOW_SS4 = "leshow.fan.ss4"
-MODEL_FAN_1C = "dmaker.fan.1c"
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
@@ -166,51 +166,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
         vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
         vol.Optional(CONF_MODEL): vol.In(
             [
-                MODEL_AIRPURIFIER_V1,
-                MODEL_AIRPURIFIER_V2,
-                MODEL_AIRPURIFIER_V3,
-                MODEL_AIRPURIFIER_V5,
-                MODEL_AIRPURIFIER_PRO,
-                MODEL_AIRPURIFIER_PRO_V7,
-                MODEL_AIRPURIFIER_M1,
-                MODEL_AIRPURIFIER_M2,
-                MODEL_AIRPURIFIER_MA1,
-                MODEL_AIRPURIFIER_MA2,
-                MODEL_AIRPURIFIER_SA1,
-                MODEL_AIRPURIFIER_SA2,
-                MODEL_AIRPURIFIER_2S,
-                MODEL_AIRPURIFIER_2H,
-                MODEL_AIRPURIFIER_3,
-                MODEL_AIRPURIFIER_3H,
-                MODEL_AIRPURIFIER_ZA1,
-                MODEL_AIRPURIFIER_AIRDOG_X3,
-                MODEL_AIRPURIFIER_AIRDOG_X5,
-                MODEL_AIRPURIFIER_AIRDOG_X7SM,
-                MODEL_AIRHUMIDIFIER_V1,
-                MODEL_AIRHUMIDIFIER_CA1,
-                MODEL_AIRHUMIDIFIER_CA4,
-                MODEL_AIRHUMIDIFIER_CB1,
-                MODEL_AIRHUMIDIFIER_MJJSQ,
-                MODEL_AIRHUMIDIFIER_JSQ,
-                MODEL_AIRHUMIDIFIER_JSQ1,
-                MODEL_AIRHUMIDIFIER_JSQ001,
-                MODEL_AIRFRESH_A1,
-                MODEL_AIRFRESH_VA2,
-                MODEL_AIRFRESH_VA4,
-                MODEL_AIRFRESH_T2017,
-                MODEL_FAN_V2,
-                MODEL_FAN_V3,
-                MODEL_FAN_SA1,
-                MODEL_FAN_ZA1,
-                MODEL_FAN_ZA3,
-                MODEL_FAN_ZA4,
-                MODEL_FAN_P5,
-                MODEL_FAN_P8,
-                MODEL_FAN_P9,
-                MODEL_FAN_P10,
-                MODEL_FAN_P11,
-                MODEL_FAN_LESHOW_SS4,
-                MODEL_FAN_1C,
+                list(OPT_MODEL.keys()).remove("auto.detect")
             ]
         ),
         vol.Optional(CONF_RETRIES, default=DEFAULT_RETRIES): cv.positive_int,
@@ -1085,18 +1041,41 @@ SERVICE_TO_METHOD = {
 
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
+    """Import Mijia Circulator configuration from YAML."""
+    _LOGGER.warning(
+        "Loading Mijia Circulator via platform setup is deprecated; Please remove it from your configuration"
+    )
+    hass.async_create_task(
+        hass.config_entries.flow.async_init(
+            DOMAIN,
+            context={"source": SOURCE_IMPORT},
+            data=config,
+        )
+    )
+
+async def async_setup_entry(hass, config, async_add_devices, discovery_info=None):
     """Set up the miio fan device from config."""
+
     if DATA_KEY not in hass.data:
         hass.data[DATA_KEY] = {}
 
-    host = config[CONF_HOST]
-    token = config[CONF_TOKEN]
-    name = config[CONF_NAME]
-    model = config.get(CONF_MODEL)
-    retries = config[CONF_RETRIES]
+    if config.data.get(CONF_HOST, None):
+        host = config.data[CONF_HOST]
+        token = config.data[CONF_TOKEN]
+        name = config.data.get(CONF_NAME, config.title)
+        model = config.data.get(CONF_MODEL)
+        retries = config.data.get(CONF_RETRIES, 3)
+    else:
+        host = config.options[CONF_HOST]
+        token = config.options[CONF_TOKEN]
+        name = config.options.get(CONF_NAME, config.title)
+        model = config.options.get(CONF_MODEL)
+        retries = config.options.get(CONF_RETRIES, 3)
 
     _LOGGER.info("Initializing with host %s (token %s...)", host, token[:5])
     unique_id = None
+    if model == "auto.detect":
+        model = None
 
     if model is None:
         try:
@@ -1112,6 +1091,8 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
             )
         except DeviceException as ex:
             raise PlatformNotReady from ex
+    else:
+        unique_id = f"{model}-{host}"
 
     if model in PURIFIER_MIOT:
         air_purifier = AirPurifierMiot(host, token)
@@ -1194,7 +1175,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
         return False
 
     hass.data[DATA_KEY][host] = device
-    async_add_entities([device], update_before_add=True)
+    async_add_devices([device], update_before_add=True)
 
     async def async_service_handler(service):
         """Map services to methods on XiaomiAirPurifier."""
@@ -1291,6 +1272,20 @@ class XiaomiGenericDevice(FanEntity):
             return value.value
 
         return value
+
+    @property
+    def device_info(self):
+        device_info = self._device.info()
+        model = device_info.model
+        manufacturer = model.split(".")[0]
+        return {
+            'identifiers': {(DOMAIN, device_info.mac_address)},
+            'manufacturer': manufacturer,
+            'model': model,
+            'name': self._name,
+            'hw_version': device_info.hardware_version,
+            'sw_version': device_info.firmware_version
+        }
 
     async def _try_command(self, mask_error, func, *args, **kwargs):
         """Call a miio device command handling error messages."""
@@ -2513,7 +2508,7 @@ class XiaomiFanP5(XiaomiFan):
         self._preset_mode = None
         self._oscillate = None
         self._natural_mode = False
-
+        self._state_attrs = {ATTR_MODEL: self._model}
         self._state_attrs.update(
             {attribute: None for attribute in self._available_attributes}
         )
