@@ -5,7 +5,6 @@ from functools import partial
 import logging
 from typing import Optional
 
-from .airpurifier_miot import AirPurifierZA1
 from miio import (  # pylint: disable=import-error
     AirDogX3,
     AirDogX5,
@@ -99,6 +98,9 @@ from homeassistant.util.percentage import (
     ordered_list_item_to_percentage,
     percentage_to_ordered_list_item,
 )
+from .airpurifier_miot import AirPurifierZA1
+from .mosq_miot import Dispeller
+from .fan_miot import FanFA1
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -158,6 +160,8 @@ MODEL_FAN_P10 = "dmaker.fan.p10"
 MODEL_FAN_P11 = "dmaker.fan.p11"
 MODEL_FAN_LESHOW_SS4 = "leshow.fan.ss4"
 MODEL_FAN_1C = "dmaker.fan.1c"
+MODEL_FAN_FA1 = "zhimi.fan.fa1"
+MODEL_FAN_FB1 = "zhimi.fan.fb1"
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
@@ -211,6 +215,8 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
                 MODEL_FAN_P11,
                 MODEL_FAN_LESHOW_SS4,
                 MODEL_FAN_1C,
+                MODEL_FAN_FA1,
+                MODEL_FAN_FB1
             ]
         ),
         vol.Optional(CONF_RETRIES, default=DEFAULT_RETRIES): cv.positive_int,
@@ -1163,6 +1169,9 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     elif model == MODEL_FAN_P9:
         fan = FanP9(host, token, model=model)
         device = XiaomiFanMiot(name, fan, model, unique_id, retries)
+    elif model in [MODEL_FAN_FA1, MODEL_FAN_FB1]:
+        fan = FanFA1(host, token, model=model)
+        device = XiaomiFanMiotFA1(name, fan, model, unique_id, retries)
     elif model == MODEL_FAN_P10:
         fan = FanP10(host, token, model=model)
         device = XiaomiFanMiot(name, fan, model, unique_id, retries)
@@ -2513,7 +2522,7 @@ class XiaomiFanP5(XiaomiFan):
         self._preset_mode = None
         self._oscillate = None
         self._natural_mode = False
-
+        self._state_attrs = {ATTR_MODEL: self._model}
         self._state_attrs.update(
             {attribute: None for attribute in self._available_attributes}
         )
@@ -2627,6 +2636,92 @@ class XiaomiFanP5(XiaomiFan):
 
 class XiaomiFanMiot(XiaomiFanP5):
     """Representation of a Xiaomi Pedestal Fan P9, P10, P11."""
+
+
+class XiaomiFanMiotFA1(XiaomiFanP5):
+    """Representation of a Xiaomi Pedestal Fan FA1, FB1."""
+
+    def __init__(self, name, device, model, unique_id, retries):
+        """Initialize the fan entity."""
+        super().__init__(name, device, model, unique_id, retries)
+
+        self._device_features = FEATURE_FLAGS_FAN_P5
+        self._available_attributes = AVAILABLE_ATTRIBUTES_FAN_P5
+        self._percentage = None
+        self._preset_modes = list(FAN_PRESET_MODES)
+        self._preset_mode = None
+        self._oscillate = None
+        self._natural_mode = False
+        self._state_attrs = {ATTR_MODEL: self._model}
+        self._state_attrs.update(
+            {attribute: None for attribute in self._available_attributes}
+        )
+
+
+    async def async_update(self):
+        """Fetch state from the device."""
+        # On state change the device doesn't provide the new state immediately.
+        if self._skip_update:
+            self._skip_update = False
+            return
+
+        try:
+            state = await self.hass.async_add_job(self._device.status)
+            _LOGGER.debug("Got new state: %s", state)
+
+            self._available = True
+            self._percentage = state.speed
+            self._oscillate = state.oscillate
+            self._natural_mode = state.mode == FanOperationMode.Normal
+            self._state = state.is_on
+
+            for preset_mode, range in FAN_PRESET_MODES.items():
+                if state.speed in range:
+                    self._preset_mode = preset_mode
+                    break
+
+            self._state_attrs.update(
+                {
+                    key: self._extract_value_from_attribute(state, value)
+                    for key, value in self._available_attributes.items()
+                }
+            )
+
+            self._retry = 0
+ 
+        except DeviceException as ex:
+            self._retry = self._retry + 1
+            if self._retry < self._retries:
+                _LOGGER.info(
+                    "Got exception while fetching the state: %s , _retry=%s",
+                    ex,
+                    self._retry,
+                )
+            else:
+                self._available = False
+                _LOGGER.error(
+                    "Got exception while fetching the state: %s , _retry=%s",
+                    ex,
+                    self._retry,
+                )
+
+    async def async_set_direction(self, direction: str) -> None:
+        """Set the direction of the fan."""
+        # Vertical Swing
+        if direction in ["forward", "right"]:
+            await self._try_command(
+                "Setting oscillate on of the miio device failed.",
+                self._device.send,
+                "set_properties",
+                [{"piid": 4, "siid": 2, "did": "direction", "value": True}]
+            )
+        else:
+            await self._try_command(
+                "Setting oscillate on of the miio device failed.",
+                self._device.send,
+                "set_properties",
+                [{"piid": 4, "siid": 2, "did": "direction", "value": False}]
+            )
 
 
 class XiaomiFanLeshow(XiaomiGenericDevice):
