@@ -37,6 +37,7 @@ MODEL_AIRHUMIDIFIER_CB1 = "zhimi.humidifier.cb1"
 MODEL_AIRHUMIDIFIER_MJJSQ = "deerma.humidifier.mjjsq"
 MODEL_AIRHUMIDIFIER_JSQ = "deerma.humidifier.jsq"
 MODEL_AIRHUMIDIFIER_JSQ1 = "deerma.humidifier.jsq1"
+MODEL_AIRHUMIDIFIER_JSQ5 = "deerma.humidifier.jsq5"
 MODEL_AIRHUMIDIFIER_JSQ001 = "shuii.humidifier.jsq001"
 
 MODEL_AIRFRESH_A1 = "dmaker.airfresh.a1"
@@ -89,6 +90,7 @@ OPT_MODEL = {
     MODEL_AIRHUMIDIFIER_MJJSQ: "Mijia Smart Sterilization Humidifier S",
     MODEL_AIRHUMIDIFIER_JSQ: "Mijia Intelligent Sterilization Humidifier",
     MODEL_AIRHUMIDIFIER_JSQ1: "Mijia Intelligent Sterilization Humidifier SCK0A45",
+    MODEL_AIRHUMIDIFIER_JSQ5: "Mijia Intelligent Sterilization Humidifier",
     MODEL_AIRHUMIDIFIER_JSQ001: "Zero Fog Humidifier",
     MODEL_AIRFRESH_A1: "Smartmi Fresh Air System",
     MODEL_AIRFRESH_VA2: "Smartmi Fresh Air System (XFXT01ZM)",
