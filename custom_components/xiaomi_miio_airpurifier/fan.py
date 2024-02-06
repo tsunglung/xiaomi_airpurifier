@@ -5,16 +5,14 @@ from functools import partial
 import logging
 from typing import Optional
 
-from .airpurifier_miot import AirPurifierZA1
 from miio import (  # pylint: disable=import-error
     AirDogX3,
-    AirDogX5,
-    AirDogX7SM,
     AirFresh,
     AirFreshA1,
     AirFreshT2017,
     AirHumidifier,
     AirHumidifierJsq,
+    AirHumidifierJsqs,
     AirHumidifierMiot,
     AirHumidifierMjjsq,
     AirPurifier,
@@ -24,66 +22,61 @@ from miio import (  # pylint: disable=import-error
     Fan,
     Fan1C,
     FanLeshow,
+    FanMiot,
     FanP5,
-    FanP9,
-    FanP10,
-    FanP11,
 )
-from miio.airfresh import (  # pylint: disable=import-error, import-error
+from miio.integrations.airpurifier.zhimi.airfresh import (  # pylint: disable=import-error, import-error
     LedBrightness as AirfreshLedBrightness,
     OperationMode as AirfreshOperationMode,
 )
-from miio.airfresh_t2017 import (  # pylint: disable=import-error, import-error
+from miio.integrations.airpurifier.dmaker.airfresh_t2017 import (  # pylint: disable=import-error, import-error
     DisplayOrientation as AirfreshT2017DisplayOrientation,
     OperationMode as AirfreshT2017OperationMode,
     PtcLevel as AirfreshT2017PtcLevel,
 )
-from miio.airhumidifier import (  # pylint: disable=import-error, import-error
+from miio.integrations.humidifier.zhimi.airhumidifier import (  # pylint: disable=import-error, import-error
     LedBrightness as AirhumidifierLedBrightness,
     OperationMode as AirhumidifierOperationMode,
 )
-from miio.airhumidifier_jsq import (  # pylint: disable=import-error, import-error
+from miio.integrations.humidifier.shuii.airhumidifier_jsq import (  # pylint: disable=import-error, import-error
     LedBrightness as AirhumidifierJsqLedBrightness,
     OperationMode as AirhumidifierJsqOperationMode,
 )
-from miio.airhumidifier_miot import (  # pylint: disable=import-error, import-error
+from miio.integrations.humidifier.zhimi.airhumidifier_miot import (  # pylint: disable=import-error, import-error
     LedBrightness as AirhumidifierMiotLedBrightness,
     OperationMode as AirhumidifierMiotOperationMode,
     PressedButton as AirhumidifierPressedButton,
 )
-from miio.airhumidifier_mjjsq import (  # pylint: disable=import-error, import-error
+from miio.integrations.humidifier.deerma.airhumidifier_mjjsq import (  # pylint: disable=import-error, import-error
     OperationMode as AirhumidifierMjjsqOperationMode,
 )
-from miio.airpurifier import (  # pylint: disable=import-error, import-error
+from miio.integrations.airpurifier.zhimi.airpurifier import (  # pylint: disable=import-error, import-error
     LedBrightness as AirpurifierLedBrightness,
     OperationMode as AirpurifierOperationMode,
 )
-from miio.airpurifier_airdog import (  # pylint: disable=import-error, import-error
+from miio.integrations.airpurifier.airdog.airpurifier_airdog import (  # pylint: disable=import-error, import-error
     OperationMode as AirDogOperationMode,
 )
-from miio.airpurifier_miot import (  # pylint: disable=import-error, import-error
+from miio.integrations.airpurifier.zhimi.airpurifier_miot import (  # pylint: disable=import-error, import-error
     LedBrightness as AirpurifierMiotLedBrightness,
     OperationMode as AirpurifierMiotOperationMode,
 )
-from miio.fan import (  # pylint: disable=import-error, import-error
+from miio.fan_common import (  # pylint: disable=import-error, import-error
     LedBrightness as FanLedBrightness,
     MoveDirection as FanMoveDirection,
     OperationMode as FanOperationMode,
 )
-from miio.fan_leshow import (  # pylint: disable=import-error, import-error
+from miio.integrations.fan.leshow.fan_leshow import (  # pylint: disable=import-error, import-error
     OperationMode as FanLeshowOperationMode,
 )
-from miio.fan_miot import OperationModeMiot as FanOperationModeMiot
+from miio.integrations.humidifier.deerma.airhumidifier_jsqs import (  # pylint: disable=import-error, import-error
+    OperationMode as AirhumidifierJsqsOperationMode,
+)
 import voluptuous as vol
 
 from homeassistant.components.fan import (
-    ATTR_SPEED,
     PLATFORM_SCHEMA,
-    SPEED_OFF,
-    SUPPORT_DIRECTION,
-    SUPPORT_OSCILLATE,
-    SUPPORT_PRESET_MODE,
-    SUPPORT_SET_SPEED,
+    FanEntityFeature,
     FanEntity,
 )
 from homeassistant.const import (
@@ -132,9 +125,13 @@ from .const import (
     MODEL_AIRHUMIDIFIER_CA1,
     MODEL_AIRHUMIDIFIER_CA4,
     MODEL_AIRHUMIDIFIER_CB1,
+    MODEL_AIRHUMIDIFIER_CB2,
     MODEL_AIRHUMIDIFIER_MJJSQ,
     MODEL_AIRHUMIDIFIER_JSQ,
     MODEL_AIRHUMIDIFIER_JSQ1,
+    MODEL_AIRHUMIDIFIER_JSQ3,
+    MODEL_AIRHUMIDIFIER_JSQ5,
+    MODEL_AIRHUMIDIFIER_JSQS,
     MODEL_AIRHUMIDIFIER_JSQ001,
     MODEL_AIRFRESH_A1,
     MODEL_AIRFRESH_VA2,
@@ -146,6 +143,8 @@ from .const import (
     MODEL_FAN_ZA1,
     MODEL_FAN_ZA3,
     MODEL_FAN_ZA4,
+    MODEL_FAN_FA1,
+    MODEL_FAN_FB1,
     MODEL_FAN_P5,
     MODEL_FAN_P8,
     MODEL_FAN_P9,
@@ -153,8 +152,13 @@ from .const import (
     MODEL_FAN_P11,
     MODEL_FAN_LESHOW_SS4,
     MODEL_FAN_1C,
+    MODEL_MOSQ_DAKUO,
     OPT_MODEL
 )
+from .airpurifier_miot import AirPurifierZA1
+from .mosq_miot import Dispeller
+from .fan_miot import FanFA1
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -173,7 +177,10 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     }
 )
 
+SPEED_OFF = "off"
+
 ATTR_MODEL = "model"
+ATTR_SPEED = "speed"
 
 # Air Purifier
 ATTR_TEMPERATURE = "temperature"
@@ -216,7 +223,6 @@ ATTR_HARDWARE_VERSION = "hardware_version"
 
 # Air Humidifier CA
 # ATTR_MOTOR_SPEED = "motor_speed"
-ATTR_DEPTH = "depth"
 ATTR_DRY = "dry"
 
 # Air Humidifier CA4
@@ -227,7 +233,7 @@ ATTR_FAULT = "fault"
 ATTR_POWER_TIME = "power_time"
 ATTR_CLEAN_MODE = "clean_mode"
 
-# Air Humidifier MJJSQ, JSQ and JSQ1 and JSQ5
+# Air Humidifier MJJSQ, JSQ, JSQ1, JSQ5 ans JSQS
 ATTR_NO_WATER = "no_water"
 ATTR_WATER_TANK_DETACHED = "water_tank_detached"
 ATTR_WET_PROTECTION = "wet_protection"
@@ -455,7 +461,6 @@ AVAILABLE_ATTRIBUTES_AIRHUMIDIFIER_CA_AND_CB = {
     **AVAILABLE_ATTRIBUTES_AIRHUMIDIFIER_COMMON,
     ATTR_TARGET_HUMIDITY: "target_humidity",
     ATTR_MOTOR_SPEED: "motor_speed",
-    ATTR_DEPTH: "depth",  # deprecated
     ATTR_DRY: "dry",
     ATTR_CHILD_LOCK: "child_lock",
     ATTR_LED_BRIGHTNESS: "led_brightness",
@@ -494,7 +499,19 @@ AVAILABLE_ATTRIBUTES_AIRHUMIDIFIER_JSQ1 = {
     ATTR_WET_PROTECTION: "wet_protection",
 }
 
-AVAILABLE_ATTRIBUTES_AIRHUMIDIFIER_JSQ5 = {**AVAILABLE_ATTRIBUTES_AIRHUMIDIFIER_MJJSQ}
+AVAILABLE_ATTRIBUTES_AIRHUMIDIFIER_JSQ5 = {
+    **AVAILABLE_ATTRIBUTES_AIRHUMIDIFIER_COMMON,
+    ATTR_HUMIDITY: "relative_humidity",
+    ATTR_TARGET_HUMIDITY: "target_humidity",
+    ATTR_LED: "led_light",
+    ATTR_NO_WATER: "water_shortage_fault",
+    ATTR_WATER_TANK_DETACHED: "tank_filed",
+}
+
+AVAILABLE_ATTRIBUTES_AIRHUMIDIFIER_JSQS = {
+    **AVAILABLE_ATTRIBUTES_AIRHUMIDIFIER_JSQ5,
+    ATTR_WET_PROTECTION: "overwet_protect",
+}
 
 AVAILABLE_ATTRIBUTES_AIRHUMIDIFIER_JSQ = {
     **AVAILABLE_ATTRIBUTES_AIRHUMIDIFIER_COMMON,
@@ -523,7 +540,11 @@ AVAILABLE_ATTRIBUTES_AIRFRESH = {
     ATTR_EXTRA_FEATURES: "extra_features",
 }
 
-AVAILABLE_ATTRIBUTES_AIRFRESH_VA4 = {**AVAILABLE_ATTRIBUTES_AIRFRESH, ATTR_PTC: "ptc", ATTR_NTC_TEMPERATURE: "ntc_temperature"}
+AVAILABLE_ATTRIBUTES_AIRFRESH_VA4 = {
+    **AVAILABLE_ATTRIBUTES_AIRFRESH,
+    ATTR_PTC: "ptc",
+    ATTR_NTC_TEMPERATURE: "ntc_temperature",
+}
 
 AVAILABLE_ATTRIBUTES_AIRFRESH_A1 = {
     ATTR_POWER: "power",
@@ -620,6 +641,12 @@ AVAILABLE_ATTRIBUTES_FAN_1C = {
     ATTR_CHILD_LOCK: "child_lock",
 }
 
+ATTR_LIQUID_LEFT = "liquid-left"
+AVAILABLE_ATTRIBUTES_FAN_DAKUO = {
+    ATTR_MODE: "mode",
+#    ATTR_LIQUID_LEFT: "liquid_left"
+}
+
 FAN_SPEED_LEVEL1 = "Level 1"
 FAN_SPEED_LEVEL2 = "Level 2"
 FAN_SPEED_LEVEL3 = "Level 3"
@@ -654,6 +681,12 @@ FAN_PRESET_MODES_1C = {
     FAN_SPEED_LEVEL1: 1,
     FAN_SPEED_LEVEL2: 2,
     FAN_SPEED_LEVEL3: 3,
+}
+
+FAN_PRESET_MODES_DAKUO = {
+    SPEED_OFF: 0,
+    FAN_SPEED_LEVEL1: 1,
+    FAN_SPEED_LEVEL2: 2
 }
 
 FAN_SPEEDS_1C = list(FAN_PRESET_MODES_1C)
@@ -801,6 +834,13 @@ FEATURE_FLAGS_AIRHUMIDIFIER_JSQ5 = (
     FEATURE_SET_BUZZER | FEATURE_SET_LED | FEATURE_SET_TARGET_HUMIDITY
 )
 
+FEATURE_FLAGS_AIRHUMIDIFIER_JSQS = (
+    FEATURE_SET_BUZZER
+    | FEATURE_SET_LED
+    | FEATURE_SET_TARGET_HUMIDITY
+    | FEATURE_SET_WET_PROTECTION
+)
+
 FEATURE_FLAGS_AIRHUMIDIFIER_JSQ = (
     FEATURE_SET_BUZZER
     | FEATURE_SET_LED
@@ -867,6 +907,8 @@ FEATURE_FLAGS_FAN_LESHOW_SS4 = FEATURE_SET_BUZZER
 FEATURE_FLAGS_FAN_1C = FEATURE_FLAGS_FAN
 
 FEATURE_FLAGS_AIRPURIFIER_AIRDOG = FEATURE_SET_CHILD_LOCK
+
+FEATURE_FLAGS_FAN_DAKUO = 0
 
 SERVICE_SET_BUZZER_ON = "fan_set_buzzer_on"
 SERVICE_SET_BUZZER_OFF = "fan_set_buzzer_off"
@@ -1063,7 +1105,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
         )
     )
 
-async def async_setup_entry(hass, config, async_add_devices, discovery_info=None):
+async def async_setup_entry(hass, config, async_add_entities, discovery_info=None):
     """Set up the miio fan device from config."""
 
     if DATA_KEY not in hass.data:
@@ -1123,10 +1165,16 @@ async def async_setup_entry(hass, config, async_add_devices, discovery_info=None
         MODEL_AIRHUMIDIFIER_MJJSQ,
         MODEL_AIRHUMIDIFIER_JSQ,
         MODEL_AIRHUMIDIFIER_JSQ1,
-        MODEL_AIRHUMIDIFIER_JSQ5,
     ]:
         air_humidifier = AirHumidifierMjjsq(host, token, model=model)
         device = XiaomiAirHumidifierMjjsq(name, air_humidifier, model, unique_id)
+    elif model in [
+        MODEL_AIRHUMIDIFIER_JSQ3,
+        MODEL_AIRHUMIDIFIER_JSQ5,
+        MODEL_AIRHUMIDIFIER_JSQS,
+    ]:
+        air_humidifier = AirHumidifierJsqs(host, token, model=model)
+        device = XiaomiAirHumidifierJsqs(name, air_humidifier, model, unique_id)
     elif model == MODEL_AIRHUMIDIFIER_JSQ001:
         air_humidifier = AirHumidifierJsq(host, token, model=model)
         device = XiaomiAirHumidifierJsq(name, air_humidifier, model, unique_id)
@@ -1152,30 +1200,28 @@ async def async_setup_entry(hass, config, async_add_devices, discovery_info=None
     elif model == MODEL_FAN_P5:
         fan = FanP5(host, token, model=model)
         device = XiaomiFanP5(name, fan, model, unique_id, retries)
-    elif model == MODEL_FAN_P9:
-        fan = FanP9(host, token, model=model)
+    elif model in [MODEL_FAN_P10, MODEL_FAN_P18]:
+        fan = FanMiot(host, token, model=MODEL_FAN_P10)
         device = XiaomiFanMiot(name, fan, model, unique_id, retries)
-    elif model == MODEL_FAN_P10:
-        fan = FanP10(host, token, model=model)
-        device = XiaomiFanMiot(name, fan, model, unique_id, retries)
-    elif model == MODEL_FAN_P11:
-        fan = FanP11(host, token, model=model)
+    elif model in [MODEL_FAN_P9, MODEL_FAN_P11]:
+        fan = FanMiot(host, token, model=model)
         device = XiaomiFanMiot(name, fan, model, unique_id, retries)
     elif model == MODEL_FAN_LESHOW_SS4:
         fan = FanLeshow(host, token, model=model)
         device = XiaomiFanLeshow(name, fan, model, unique_id, retries)
-    elif model == MODEL_AIRPURIFIER_AIRDOG_X3:
-        air_purifier = AirDogX3(host, token)
-        device = XiaomiAirDog(name, air_purifier, model, unique_id, retries)
-    elif model == MODEL_AIRPURIFIER_AIRDOG_X5:
-        air_purifier = AirDogX5(host, token)
-        device = XiaomiAirDog(name, air_purifier, model, unique_id, retries)
-    elif model == MODEL_AIRPURIFIER_AIRDOG_X7SM:
-        air_purifier = AirDogX7SM(host, token)
+    elif model in [
+        MODEL_AIRPURIFIER_AIRDOG_X3,
+        MODEL_AIRPURIFIER_AIRDOG_X5,
+        MODEL_AIRPURIFIER_AIRDOG_X7SM,
+    ]:
+        air_purifier = AirDogX3(host, token, model=model)
         device = XiaomiAirDog(name, air_purifier, model, unique_id, retries)
     elif model in [MODEL_FAN_1C, MODEL_FAN_P8]:
         fan = Fan1C(host, token, model=model)
         device = XiaomiFan1C(name, fan, model, unique_id, retries)
+    elif model == MODEL_MOSQ_DAKUO:
+        fan = Dispeller(host, token, model=model)
+        device = XiaomiMosqMiot(name, fan, model, unique_id, retries)
     else:
         _LOGGER.error(
             "Unsupported device found! Please create an issue at "
@@ -1186,7 +1232,7 @@ async def async_setup_entry(hass, config, async_add_devices, discovery_info=None
         return False
 
     hass.data[DATA_KEY][host] = device
-    async_add_devices([device], update_before_add=True)
+    async_add_entities([device], update_before_add=True)
 
     async def async_service_handler(service):
         """Map services to methods on XiaomiAirPurifier."""
@@ -1209,7 +1255,7 @@ async def async_setup_entry(hass, config, async_add_devices, discovery_info=None
             if not hasattr(device, method["method"]):
                 continue
             await getattr(device, method["method"])(**params)
-            update_tasks.append(device.async_update_ha_state(True))
+            update_tasks.append(asyncio.create_task(device.async_update_ha_state(True)))
 
         if update_tasks:
             await asyncio.wait(update_tasks)
@@ -1244,7 +1290,7 @@ class XiaomiGenericDevice(FanEntity):
     @property
     def supported_features(self):
         """Flag supported features."""
-        return SUPPORT_PRESET_MODE
+        return FanEntityFeature.PRESET_MODE
 
     @property
     def should_poll(self):
@@ -1663,7 +1709,11 @@ class XiaomiAirHumidifier(XiaomiGenericDevice):
         """Initialize the plug switch."""
         super().__init__(name, device, model, unique_id)
 
-        if self._model in [MODEL_AIRHUMIDIFIER_CA1, MODEL_AIRHUMIDIFIER_CB1]:
+        if self._model in [
+            MODEL_AIRHUMIDIFIER_CA1,
+            MODEL_AIRHUMIDIFIER_CB1,
+            MODEL_AIRHUMIDIFIER_CB2,
+        ]:
             self._device_features = FEATURE_FLAGS_AIRHUMIDIFIER_CA_AND_CB
             self._available_attributes = AVAILABLE_ATTRIBUTES_AIRHUMIDIFIER_CA_AND_CB
             self._preset_modes = [
@@ -1887,14 +1937,13 @@ class XiaomiAirHumidifierMjjsq(XiaomiAirHumidifier):
         if self._model == MODEL_AIRHUMIDIFIER_JSQ1:
             self._device_features = FEATURE_FLAGS_AIRHUMIDIFIER_JSQ1
             self._available_attributes = AVAILABLE_ATTRIBUTES_AIRHUMIDIFIER_JSQ1
-        elif self._model == MODEL_AIRHUMIDIFIER_JSQ5:
-            self._device_features = FEATURE_FLAGS_AIRHUMIDIFIER_JSQ5
-            self._available_attributes = AVAILABLE_ATTRIBUTES_AIRHUMIDIFIER_JSQ5
         else:
             self._device_features = FEATURE_FLAGS_AIRHUMIDIFIER_MJJSQ
             self._available_attributes = AVAILABLE_ATTRIBUTES_AIRHUMIDIFIER_MJJSQ
 
-        self._preset_modes = [mode.name for mode in AirhumidifierMjjsqOperationMode]
+        self._preset_modes = [mode.name for mode in AirhumidifierMjjsqOperationMode
+                              if self._device_features & FEATURE_SET_WET_PROTECTION != 0
+                              or mode != AirhumidifierMjjsqOperationMode.WetAndProtect]
         self._state_attrs = {ATTR_MODEL: self._model}
         self._state_attrs.update(
             {attribute: None for attribute in self._available_attributes}
@@ -1938,6 +1987,90 @@ class XiaomiAirHumidifierMjjsq(XiaomiAirHumidifier):
         await self._try_command(
             "Turning the wet protection of the miio device off failed.",
             self._device.set_wet_protection,
+            False,
+        )
+
+
+class XiaomiAirHumidifierJsqs(XiaomiAirHumidifier):
+    """Representation of a Xiaomi Air Humidifier Jsqs."""
+
+    def __init__(self, name, device, model, unique_id):
+        """Initialize the plug switch."""
+        super().__init__(name, device, model, unique_id)
+
+        if self._model in [MODEL_AIRHUMIDIFIER_JSQ3, MODEL_AIRHUMIDIFIER_JSQ5]:
+            self._device_features = FEATURE_FLAGS_AIRHUMIDIFIER_JSQ5
+            self._available_attributes = AVAILABLE_ATTRIBUTES_AIRHUMIDIFIER_JSQ5
+        else:
+            self._device_features = FEATURE_FLAGS_AIRHUMIDIFIER_JSQS
+            self._available_attributes = AVAILABLE_ATTRIBUTES_AIRHUMIDIFIER_JSQS
+
+        self._preset_modes = [mode.name for mode in AirhumidifierJsqsOperationMode]
+        self._state_attrs = {ATTR_MODEL: self._model}
+        self._state_attrs.update(
+            {attribute: None for attribute in self._available_attributes}
+        )
+
+    @property
+    def preset_mode(self):
+        """Get the current preset mode."""
+        if self._state:
+            return AirhumidifierJsqsOperationMode(self._state_attrs[ATTR_MODE]).name
+
+        return None
+
+    async def async_set_preset_mode(self, preset_mode: str) -> None:
+        """Set the preset mode of the fan."""
+
+        _LOGGER.debug("Setting the preset mode to: %s", preset_mode)
+
+        await self._try_command(
+            "Setting preset mode of the miio device failed.",
+            self._device.set_mode,
+            AirhumidifierJsqsOperationMode[preset_mode.title()],
+        )
+
+    async def async_set_led_on(self):
+        """Turn the led on."""
+        if self._device_features & FEATURE_SET_LED == 0:
+            return
+
+        await self._try_command(
+            "Turning the led of the miio device on failed.",
+            self._device.set_light,
+            True,
+        )
+
+    async def async_set_led_off(self):
+        """Turn the led off."""
+        if self._device_features & FEATURE_SET_LED == 0:
+            return
+
+        await self._try_command(
+            "Turning the led of the miio device off failed.",
+            self._device.set_light,
+            False,
+        )
+
+    async def async_set_wet_protection_on(self):
+        """Turn the wet protection on."""
+        if self._device_features & FEATURE_SET_WET_PROTECTION == 0:
+            return
+
+        await self._try_command(
+            "Turning the wet protection of the miio device on failed.",
+            self._device.set_overwet_protect,
+            True,
+        )
+
+    async def async_set_wet_protection_off(self):
+        """Turn the wet protection off."""
+        if self._device_features & FEATURE_SET_WET_PROTECTION == 0:
+            return
+
+        await self._try_command(
+            "Turning the wet protection of the miio device off failed.",
+            self._device.set_overwet_protect,
             False,
         )
 
@@ -2305,10 +2438,10 @@ class XiaomiFan(XiaomiGenericDevice):
     def supported_features(self) -> int:
         """Supported features."""
         return (
-            SUPPORT_SET_SPEED
-            | SUPPORT_PRESET_MODE
-            | SUPPORT_OSCILLATE
-            | SUPPORT_DIRECTION
+            FanEntityFeature.SET_SPEED
+            | FanEntityFeature.PRESET_MODE
+            | FanEntityFeature.OSCILLATE
+            | FanEntityFeature.DIRECTION
         )
 
     async def async_update(self):
@@ -2635,7 +2768,93 @@ class XiaomiFanP5(XiaomiFan):
 
 
 class XiaomiFanMiot(XiaomiFanP5):
-    """Representation of a Xiaomi Pedestal Fan P9, P10, P11."""
+    """Representation of a Xiaomi Pedestal Fan P9, P10, P11, P18."""
+
+
+class XiaomiFanMiotFA1(XiaomiFanP5):
+    """Representation of a Xiaomi Pedestal Fan FA1, FB1."""
+
+    def __init__(self, name, device, model, unique_id, retries):
+        """Initialize the fan entity."""
+        super().__init__(name, device, model, unique_id, retries)
+
+        self._device_features = FEATURE_FLAGS_FAN_P5
+        self._available_attributes = AVAILABLE_ATTRIBUTES_FAN_P5
+        self._percentage = None
+        self._preset_modes = list(FAN_PRESET_MODES)
+        self._preset_mode = None
+        self._oscillate = None
+        self._natural_mode = False
+        self._state_attrs = {ATTR_MODEL: self._model}
+        self._state_attrs.update(
+            {attribute: None for attribute in self._available_attributes}
+        )
+
+
+    async def async_update(self):
+        """Fetch state from the device."""
+        # On state change the device doesn't provide the new state immediately.
+        if self._skip_update:
+            self._skip_update = False
+            return
+
+        try:
+            state = await self.hass.async_add_job(self._device.status)
+            _LOGGER.debug("Got new state: %s", state)
+
+            self._available = True
+            self._percentage = state.speed
+            self._oscillate = state.oscillate
+            self._natural_mode = state.mode == FanOperationMode.Normal
+            self._state = state.is_on
+
+            for preset_mode, range in FAN_PRESET_MODES.items():
+                if state.speed in range:
+                    self._preset_mode = preset_mode
+                    break
+
+            self._state_attrs.update(
+                {
+                    key: self._extract_value_from_attribute(state, value)
+                    for key, value in self._available_attributes.items()
+                }
+            )
+
+            self._retry = 0
+
+        except DeviceException as ex:
+            self._retry = self._retry + 1
+            if self._retry < self._retries:
+                _LOGGER.info(
+                    "Got exception while fetching the state: %s , _retry=%s",
+                    ex,
+                    self._retry,
+                )
+            else:
+                self._available = False
+                _LOGGER.error(
+                    "Got exception while fetching the state: %s , _retry=%s",
+                    ex,
+                    self._retry,
+                )
+
+    async def async_set_direction(self, direction: str) -> None:
+        """Set the direction of the fan."""
+        # Vertical Swing
+        if direction in ["forward", "right"]:
+            await self._try_command(
+                "Setting oscillate on of the miio device failed.",
+                self._device.send,
+                "set_properties",
+                [{"piid": 4, "siid": 2, "did": "direction", "value": True}]
+            )
+        else:
+            await self._try_command(
+                "Setting oscillate on of the miio device failed.",
+                self._device.send,
+                "set_properties",
+                [{"piid": 4, "siid": 2, "did": "direction", "value": False}]
+            )
 
 
 class XiaomiFanLeshow(XiaomiGenericDevice):
@@ -2658,7 +2877,7 @@ class XiaomiFanLeshow(XiaomiGenericDevice):
     @property
     def supported_features(self) -> int:
         """Supported features."""
-        return SUPPORT_SET_SPEED | SUPPORT_PRESET_MODE | SUPPORT_OSCILLATE
+        return FanEntityFeature.SET_SPEED | FanEntityFeature.PRESET_MODE | FanEntityFeature.OSCILLATE
 
     async def async_update(self):
         """Fetch state from the device."""
@@ -2791,7 +3010,7 @@ class XiaomiFan1C(XiaomiFan):
     @property
     def supported_features(self) -> int:
         """Supported features."""
-        return SUPPORT_SET_SPEED | SUPPORT_PRESET_MODE | SUPPORT_OSCILLATE
+        return FanEntityFeature.SET_SPEED | FanEntityFeature.PRESET_MODE | FanEntityFeature.OSCILLATE
 
     async def async_update(self):
         """Fetch state from the device."""
@@ -2930,7 +3149,7 @@ class XiaomiFan1C(XiaomiFan):
         await self._try_command(
             "Setting fan natural mode of the miio device failed.",
             self._device.set_mode,
-            FanOperationModeMiot.Nature,
+            FanOperationMode.Nature,
         )
 
     async def async_set_natural_mode_off(self):
@@ -2941,7 +3160,7 @@ class XiaomiFan1C(XiaomiFan):
         await self._try_command(
             "Setting fan natural mode of the miio device failed.",
             self._device.set_mode,
-            FanOperationModeMiot.Normal,
+            FanOperationMode.Normal,
         )
 
 
@@ -3166,3 +3385,72 @@ class XiaomiAirDog(XiaomiGenericDevice):
             }
         )
         self._skip_update = True
+
+
+class XiaomiMosqMiot(XiaomiFanMiot):
+    """Representation of a Xiaomi Mosquito Dispeller."""
+
+    def __init__(self, name, device, model, unique_id, retries):
+        """Initialize the fan entity."""
+        super().__init__(name, device, model, unique_id, retries)
+
+        self._device_features = FEATURE_FLAGS_FAN_DAKUO
+        self._available_attributes = AVAILABLE_ATTRIBUTES_FAN_DAKUO
+        self._percentage = None
+        self._preset_modes = list(FAN_PRESET_MODES_DAKUO)
+        self._preset_mode = None
+        self._oscillate = None
+        self._natural_mode = False
+        self._state_attrs = {ATTR_MODEL: self._model}
+        self._state_attrs.update(
+            {attribute: None for attribute in self._available_attributes}
+        )
+
+    async def async_update(self):
+        """Fetch state from the device."""
+        # On state change the device doesn't provide the new state immediately.
+        if self._skip_update:
+            self._skip_update = False
+            return
+        status = await self.hass.async_add_job(
+            self._device.raw_command,
+            "get_properties",
+            [{"siid": 6, "piid": 1, "did": "Dispeller"}]
+        )
+
+        try:
+
+            state = await self.hass.async_add_job(self._device.status)
+
+            self._available = True
+            self._state = state.is_on
+
+            for preset_mode, range in FAN_PRESET_MODES_DAKUO.items():
+                if state.speed == range:
+                    self._preset_mode = preset_mode
+                    break
+
+            self._state_attrs.update(
+                {
+                    key: self._extract_value_from_attribute(state, value)
+                    for key, value in self._available_attributes.items()
+                }
+            )
+
+            self._retry = 0
+
+        except DeviceException as ex:
+            self._retry = self._retry + 1
+            if self._retry < self._retries:
+                _LOGGER.info(
+                    "Got exception while fetching the state: %s , _retry=%s",
+                    ex,
+                    self._retry,
+                )
+            else:
+                self._available = False
+                _LOGGER.error(
+                    "Got exception while fetching the state: %s , _retry=%s",
+                    ex,
+                    self._retry,
+                )

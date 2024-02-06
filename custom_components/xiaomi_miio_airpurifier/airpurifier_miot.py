@@ -4,10 +4,11 @@ from typing import Any, Dict, Optional
 
 import click
 
-from miio.airfilter_util import FilterType, FilterTypeUtil
+from miio.integrations.airpurifier.zhimi.airfilter_util import FilterType, FilterTypeUtil
 from miio.click_common import EnumType, command, format_output
 from miio.exceptions import DeviceException
-from miio.miot_device import DeviceStatus, MiotDevice
+from miio.device import DeviceStatus
+from miio.miot_device import MiotDevice
 
 _LOGGER = logging.getLogger(__name__)
 _MAPPING = {
@@ -648,7 +649,7 @@ class AirPurifierMB4(BasicAirPurifierMiot):
 
         return self.set_property("led_brightness_level", level)
 
-class AirPurifierZA1(BasicAirPurifierMiot):
+class AirPurifierZA1(AirPurifierMiot):
     """Main class representing the air purifier which uses MIoT protocol."""
 
     mapping = _MODEL_AIRPURIFIER_ZA1

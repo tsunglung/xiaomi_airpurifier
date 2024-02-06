@@ -34,10 +34,13 @@ MODEL_AIRHUMIDIFIER_V1 = "zhimi.humidifier.v1"
 MODEL_AIRHUMIDIFIER_CA1 = "zhimi.humidifier.ca1"
 MODEL_AIRHUMIDIFIER_CA4 = "zhimi.humidifier.ca4"
 MODEL_AIRHUMIDIFIER_CB1 = "zhimi.humidifier.cb1"
+MODEL_AIRHUMIDIFIER_CB2 = "zhimi.humidifier.cb2"
 MODEL_AIRHUMIDIFIER_MJJSQ = "deerma.humidifier.mjjsq"
 MODEL_AIRHUMIDIFIER_JSQ = "deerma.humidifier.jsq"
 MODEL_AIRHUMIDIFIER_JSQ1 = "deerma.humidifier.jsq1"
+MODEL_AIRHUMIDIFIER_JSQ3 = "deerma.humidifier.jsq3"
 MODEL_AIRHUMIDIFIER_JSQ5 = "deerma.humidifier.jsq5"
+MODEL_AIRHUMIDIFIER_JSQS = "deerma.humidifier.jsqs"
 MODEL_AIRHUMIDIFIER_JSQ001 = "shuii.humidifier.jsq001"
 
 MODEL_AIRFRESH_A1 = "dmaker.airfresh.a1"
@@ -58,7 +61,10 @@ MODEL_FAN_P10 = "dmaker.fan.p10"
 MODEL_FAN_P11 = "dmaker.fan.p11"
 MODEL_FAN_LESHOW_SS4 = "leshow.fan.ss4"
 MODEL_FAN_1C = "dmaker.fan.1c"
+MODEL_FAN_FA1 = "zhimi.fan.fa1"
+MODEL_FAN_FB1 = "zhimi.fan.fb1"
 
+MODEL_MOSQ_DAKUO = "ateai.mosq.dakuo"
 
 AUTO_DETECT = "auto.detect"
 OPT_MODEL = {
@@ -87,10 +93,13 @@ OPT_MODEL = {
     MODEL_AIRHUMIDIFIER_CA1: "Air Humidifier CA1",
     MODEL_AIRHUMIDIFIER_CA4: "Smartmi Humidifier Evaporator 2",
     MODEL_AIRHUMIDIFIER_CB1: "Smartmi Evaporative Humidifier",
+    MODEL_AIRHUMIDIFIER_CB2: "Smartmi Evaporative Humidifier",
     MODEL_AIRHUMIDIFIER_MJJSQ: "Mijia Smart Sterilization Humidifier S",
     MODEL_AIRHUMIDIFIER_JSQ: "Mijia Intelligent Sterilization Humidifier",
     MODEL_AIRHUMIDIFIER_JSQ1: "Mijia Intelligent Sterilization Humidifier SCK0A45",
+    MODEL_AIRHUMIDIFIER_JSQ3: "Mijia Intelligent Sterilization Humidifier",
     MODEL_AIRHUMIDIFIER_JSQ5: "Mijia Intelligent Sterilization Humidifier",
+    MODEL_AIRHUMIDIFIER_JSQS: "Mijia Intelligent Sterilization Humidifier",
     MODEL_AIRHUMIDIFIER_JSQ001: "Zero Fog Humidifier",
     MODEL_AIRFRESH_A1: "Smartmi Fresh Air System",
     MODEL_AIRFRESH_VA2: "Smartmi Fresh Air System (XFXT01ZM)",
@@ -107,7 +116,10 @@ OPT_MODEL = {
     MODEL_FAN_P9: "Pedestal Fan P9",
     MODEL_FAN_P10: "Pedestal Fan P10",
     MODEL_FAN_P11: "Pedestal Fan P11",
+    MODEL_FAN_FA1: "Xiaomi Circulating Fan",
+    MODEL_FAN_FB1: "Xiaomi Circulating Fan (Global)",
     MODEL_FAN_LESHOW_SS4: "Rosou SS4 Ventilator",
     MODEL_FAN_1C: "Pedestal Fan Fan 1C",
+    MODEL_MOSQ_DAKUO: "Dakoo Mosquito Dispeller"
 }
 

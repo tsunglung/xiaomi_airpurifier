@@ -15,7 +15,7 @@ from miio.airdehumidifier import (  # pylint: disable=import-error, import-error
 )
 import voluptuous as vol
 
-from homeassistant.components.climate import DOMAIN, PLATFORM_SCHEMA, ClimateEntity
+from homeassistant.components.climate import DOMAIN, PLATFORM_SCHEMA, ClimateEntityFeature, ClimateEntity
 from homeassistant.components.climate.const import (
     ATTR_CURRENT_HUMIDITY,
     ATTR_FAN_MODE,
@@ -27,10 +27,7 @@ from homeassistant.components.climate.const import (
     ATTR_PRESET_MODE,
     ATTR_PRESET_MODES,
     HVAC_MODE_DRY,
-    HVAC_MODE_OFF,
-    SUPPORT_FAN_MODE,
-    SUPPORT_PRESET_MODE,
-    SUPPORT_TARGET_HUMIDITY,
+    HVAC_MODE_OFF
 )
 from homeassistant.const import (
     ATTR_ENTITY_ID,
@@ -195,7 +192,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
             if not hasattr(device, method["method"]):
                 continue
             await getattr(device, method["method"])(**params)
-            update_tasks.append(device.async_update_ha_state(True))
+            update_tasks.append(asyncio.create_task(device.async_update_ha_state(True)))
 
         if update_tasks:
             await asyncio.wait(update_tasks)
@@ -395,16 +392,16 @@ class XiaomiAirDehumidifier(XiaomiGenericDevice):
         if self.current_humidity is not None:
             data[ATTR_CURRENT_HUMIDITY] = self.current_humidity
 
-        if supported_features & SUPPORT_TARGET_HUMIDITY:
+        if supported_features & ClimateEntityFeature.TARGET_HUMIDITY:
             data[ATTR_HUMIDITY] = self.target_humidity
             data[ATTR_MIN_HUMIDITY] = self.min_humidity
             data[ATTR_MAX_HUMIDITY] = self.max_humidity
 
-        if supported_features & SUPPORT_FAN_MODE:
+        if supported_features & ClimateEntityFeature.FAN_MODE:
             data[ATTR_FAN_MODE] = self.fan_mode
             data[ATTR_FAN_MODES] = self.fan_modes
 
-        if supported_features & SUPPORT_PRESET_MODE:
+        if supported_features & ClimateEntityFeature.PRESET_MODE:
             data[ATTR_PRESET_MODE] = self.preset_mode
             data[ATTR_PRESET_MODES] = self.preset_modes
 
@@ -416,12 +413,12 @@ class XiaomiAirDehumidifier(XiaomiGenericDevice):
         if self.hvac_mode == HVAC_MODE_OFF:
             return 0
 
-        features = SUPPORT_PRESET_MODE
+        features = ClimateEntityFeature.PRESET_MODE
         mode = AirdehumidifierOperationMode(self._state_attrs[ATTR_MODE])
         if mode == AirdehumidifierOperationMode.Auto:
-            features |= SUPPORT_TARGET_HUMIDITY
+            features |= ClimateEntityFeature.TARGET_HUMIDITY
         if mode != AirdehumidifierOperationMode.DryCloth:
-            features |= SUPPORT_FAN_MODE
+            features |= ClimateEntityFeature.FAN_MODE
         return features
 
     async def async_update(self):
